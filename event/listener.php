@@ -194,7 +194,7 @@ class listener implements EventSubscriberInterface
 		return $activity;
 	}
 
-	public function obtain_guest_count_24()
+	private function obtain_guest_count_24()
 	{
 		// Get number of online guests for the past 24 hours
 		// caching and main sql if none yet
@@ -203,7 +203,7 @@ class listener implements EventSubscriberInterface
 			// teh time
 			$interval = time() - 86400;
 
-			if ($this->db->sql_layer() === 'sqlite')
+			if ($this->db->get_sql_layer() === 'sqlite')
 			{
 				$sql = 'SELECT COUNT(session_ip) as num_guests_24
 					FROM (
