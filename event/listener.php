@@ -82,9 +82,12 @@ class listener implements EventSubscriberInterface
 
 		// obtain user activity data
 		$active_users = $this->obtain_active_user_data();
-		
+
 		// obtain posts/topics/new users activity
 		$activity = $this->obtain_activity_data();
+
+		// Obtain guests data
+		$total_guests_online_24 = $this->obtain_guest_count_24();
 
 		// 24 hour users online list, assign to the template block: lastvisit
 		foreach ($active_users as $row)
@@ -100,6 +103,7 @@ class listener implements EventSubscriberInterface
 			'HOUR_TOPICS'			=> $this->user->lang('24HOUR_TOPICS', $activity['topics']),
 			'HOUR_POSTS'			=> $this->user->lang('24HOUR_POSTS', $activity['posts']),
 			'HOUR_USERS'			=> $this->user->lang('24HOUR_USERS', $activity['users']),
+			'GUEST_ONLINE_24'		=> $this->user->lang('GUEST_ONLINE_24', $total_guests_online_24),
 		));
 	}
 
@@ -188,5 +192,43 @@ class listener implements EventSubscriberInterface
 		}
 
 		return $activity;
+	}
+
+	public function obtain_guest_count_24()
+	{
+		// Get number of online guests for the past 24 hours
+		// caching and main sql if none yet
+		if (($total_guests_online_24 = $this->cache->get('_total_guests_online_24')) === false)
+		{
+			// teh time
+			$interval = time() - 86400;
+
+			if ($this->db->sql_layer() === 'sqlite')
+			{
+				$sql = 'SELECT COUNT(session_ip) as num_guests_24
+					FROM (
+						SELECT DISTINCT session_ip
+						FROM ' . SESSIONS_TABLE . '
+						WHERE session_user_id = ' . ANONYMOUS . '
+							AND session_time >= ' . ($interval - ((int) ($interval % 60))) . ')';
+			}
+			else
+			{
+				$sql = 'SELECT COUNT(DISTINCT session_ip) as num_guests_24
+					FROM ' . SESSIONS_TABLE . '
+					WHERE session_user_id = ' . ANONYMOUS . '
+						AND session_time >= ' . ($interval - ((int) ($interval % 60)));
+			}
+			$result = $this->db->sql_query($sql);
+			$total_guests_online_24 = (int) $this->db->sql_fetchfield('num_guests_24');
+
+			$this->db->sql_freeresult($result);
+
+			// cache this stuff for, ohhhh, how about 5 minutes
+			// change 300 to whatever number to reduce or increase the cache time
+			$this->cache->put('_total_guests_online_24', $total_guests_online_24, 300);
+		}
+
+		return $total_guests_online_24;
 	}
 }
