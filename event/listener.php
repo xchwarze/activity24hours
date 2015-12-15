@@ -20,9 +20,6 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 */
 class listener implements EventSubscriberInterface
 {
-	/** @var \phpbb\auth\auth */
-	protected $auth;
-
 	/** @var \phpbb\cache\service */
 	protected $cache;
 
@@ -36,13 +33,11 @@ class listener implements EventSubscriberInterface
 	protected $user;
 
 	public function __construct(
-		\phpbb\auth\auth $auth,
 		\phpbb\cache\service $cache,
 		\phpbb\db\driver\driver_interface $db,
 		\phpbb\template\template $template,
 		\phpbb\user $user)
 	{
-		$this->auth = $auth;
 		$this->cache = $cache;
 		$this->db = $db;
 		$this->template = $template;
@@ -72,14 +67,13 @@ class listener implements EventSubscriberInterface
 	*/
 	public function display_24_hour_stats($event)
 	{
-		$this->user->add_lang_ext('rmcgirr83/activity24hours', 'common');
-
 		// if the user is a bot, we won’t even process this function...
 		if ($this->user->data['is_bot'])
 		{
 			return;
 		}
 
+		$this->user->add_lang_ext('rmcgirr83/activity24hours', 'common');
 		// obtain user activity data
 		$active_users = $this->obtain_active_user_data();
 
@@ -118,10 +112,9 @@ class listener implements EventSubscriberInterface
 	 */
 	private function obtain_active_user_data()
 	{
+		$active_users = array();
 		if (($active_users = $this->cache->get('_24hour_users')) === false)
 		{
-			$active_users = array();
-
 			// grab a list of users who are currently online
 			// and users who have visited in the last 24 hours
 			$sql_ary = array(
@@ -160,12 +153,11 @@ class listener implements EventSubscriberInterface
 	 */
 	private function obtain_activity_data()
 	{
+		$activity = array();
 		if (($activity = $this->cache->get('_24hour_activity')) === false)
 		{
 			// set interval to 24 hours ago
 			$interval = time() - 86400;
-
-			$activity = array();
 
 			// total new posts in the last 24 hours
 			$sql = 'SELECT COUNT(post_id) AS new_posts
@@ -200,6 +192,7 @@ class listener implements EventSubscriberInterface
 
 	private function obtain_guest_count_24()
 	{
+		$total_guests_online_24 = 0;
 		// Get number of online guests for the past 24 hours
 		// caching and main sql if none yet
 		if (($total_guests_online_24 = $this->cache->get('_total_guests_online_24')) === false)
