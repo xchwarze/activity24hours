@@ -92,8 +92,11 @@ class listener implements EventSubscriberInterface
 		// 24 hour users online list, assign to the template block: lastvisit
 		foreach ($active_users as $row)
 		{
+				$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
+				$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
+
 				$this->template->assign_block_vars('lastvisit', array(
-					'USERNAME_FULL'	=> get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']),
+					'USERNAME_FULL'	=> '<span' . $hover_info . '>' . get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']) . '</span>',
 				));
 		}
 
@@ -121,7 +124,7 @@ class listener implements EventSubscriberInterface
 			// grab a list of users who are currently online
 			// and users who have visited in the last 24 hours
 			$sql_ary = array(
-				'SELECT'	=> 'u.user_id, u.user_colour, u.username, u.user_type',
+				'SELECT'	=> 'u.user_id, u.user_colour, u.username, u.user_type, u.user_lastvisit, MAX(s.session_time) as session_time',
 				'FROM'		=> array(USERS_TABLE => 'u'),
 				'LEFT_JOIN'	=> array(
 					array(
