@@ -4,7 +4,7 @@
 
 <p>{HOUR_POSTS} &bull; {HOUR_TOPICS} &bull; {HOUR_USERS}<br>
 
-{USERS_24HOUR_TOTAL} {GUEST_ONLINE_24} {L_LAST_24_HOURS}: <!-- BEGIN lastvisit -->{lastvisit.USERNAME_FULL}<!-- IF not lastvisit.S_LAST_ROW -->{L_COMMA_SEPARATOR} <!-- ENDIF --><!-- END lastvisit -->
+{USERS_24HOUR_TOTAL} {GUEST_ONLINE_24} {L_LAST_24_HOURS}{L_COLON} <!-- IF not USERS_ACTIVE -->{L_NO_ONLINE_USERS}<!-- ELSE --><!-- BEGIN lastvisit -->{lastvisit.USERNAME_FULL}<!-- IF not lastvisit.S_LAST_ROW -->{L_COMMA_SEPARATOR} <!-- ENDIF --><!-- END lastvisit --><!-- ENDIF -->
 
 </p>
 

@@ -103,6 +103,7 @@ class listener implements EventSubscriberInterface
 		// assign the stats to the template.
 		$this->template->assign_vars(array(
 			'USERS_24HOUR_TOTAL'	=> $this->user->lang('USERS_24HOUR_TOTAL', sizeof($active_users)),
+			'USERS_ACTIVE'			=> sizeof($active_users),
 			'HOUR_TOPICS'			=> $this->user->lang('24HOUR_TOPICS', $activity['topics']),
 			'HOUR_POSTS'			=> $this->user->lang('24HOUR_POSTS', $activity['posts']),
 			'HOUR_USERS'			=> $this->user->lang('24HOUR_USERS', $activity['users']),
