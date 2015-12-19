@@ -84,7 +84,7 @@ class listener implements EventSubscriberInterface
 		$total_guests_online_24 = $this->obtain_guest_count_24();
 
 		// 24 hour users online list, assign to the template block: lastvisit
-		foreach ($active_users as $row)
+		foreach ((array)$active_users as $row)
 		{
 				$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
 				$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
@@ -112,9 +112,10 @@ class listener implements EventSubscriberInterface
 	 */
 	private function obtain_active_user_data()
 	{
-		$active_users = array();
 		if (($active_users = $this->cache->get('_24hour_users')) === false)
 		{
+			$active_users = array();
+
 			// grab a list of users who are currently online
 			// and users who have visited in the last 24 hours
 			$sql_ary = array(
@@ -153,11 +154,12 @@ class listener implements EventSubscriberInterface
 	 */
 	private function obtain_activity_data()
 	{
-		$activity = array();
 		if (($activity = $this->cache->get('_24hour_activity')) === false)
 		{
 			// set interval to 24 hours ago
 			$interval = time() - 86400;
+
+			$activity = array();
 
 			// total new posts in the last 24 hours
 			$sql = 'SELECT COUNT(post_id) AS new_posts
