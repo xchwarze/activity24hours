@@ -84,7 +84,7 @@ class listener implements EventSubscriberInterface
 		$total_guests_online_24 = $this->obtain_guest_count_24();
 
 		// 24 hour users online list, assign to the template block: lastvisit
-		foreach ((array)$active_users as $row)
+		foreach ((array) $active_users as $row)
 		{
 				$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
 				$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
