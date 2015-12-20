@@ -202,7 +202,7 @@ class listener implements EventSubscriberInterface
 			// teh time
 			$interval = time() - 86400;
 
-			if ($this->db->get_sql_layer() === 'sqlite')
+			if ($this->db->get_sql_layer() === 'sqlite' || $this->db->get_sql_layer() === 'sqlite3')
 			{
 				$sql = 'SELECT COUNT(session_ip) as num_guests_24
 					FROM (
