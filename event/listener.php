@@ -129,7 +129,7 @@ class listener implements EventSubscriberInterface
 				),
 				'WHERE'		=> 'u.user_lastvisit > ' . (time() - 86400) . ' OR s.session_user_id <> ' . ANONYMOUS,
 				'GROUP_BY'	=> 'u.user_id',
-				'ORDER_BY'	=> 'u.username',
+				'ORDER_BY'	=> 'u.username_clean',
 			);
 
 			$result = $this->db->sql_query($this->db->sql_build_query('SELECT', $sql_ary));
@@ -140,8 +140,8 @@ class listener implements EventSubscriberInterface
 			}
 			$this->db->sql_freeresult($result);
 
-			// cache this data for 1 hour, this improves performance
-			$this->cache->put('_24hour_users', $active_users, 3600);
+			// cache this data for 5 minutes, this improves performance
+			$this->cache->put('_24hour_users', $active_users, 300);
 		}
 
 		return $active_users;
@@ -185,8 +185,8 @@ class listener implements EventSubscriberInterface
 			$activity['users'] = $this->db->sql_fetchfield('new_users');
 			$this->db->sql_freeresult($result);
 
-			// cache this data for 1 hour, this improves performance
-			$this->cache->put('_24hour_activity', $activity, 3600);
+			// cache this data for 5 minutes, this improves performance
+			$this->cache->put('_24hour_activity', $activity, 300);
 		}
 
 		return $activity;
