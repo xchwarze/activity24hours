@@ -20,6 +20,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 */
 class listener implements EventSubscriberInterface
 {
+	/** @var \phpbb\auth\auth */
+	protected $auth;
+
 	/** @var \phpbb\cache\service */
 	protected $cache;
 
@@ -33,11 +36,13 @@ class listener implements EventSubscriberInterface
 	protected $user;
 
 	public function __construct(
+		\phpbb\auth\auth $auth,
 		\phpbb\cache\service $cache,
 		\phpbb\db\driver\driver_interface $db,
 		\phpbb\template\template $template,
 		\phpbb\user $user)
 	{
+		$this->auth = $auth;
 		$this->cache = $cache;
 		$this->db = $db;
 		$this->template = $template;
@@ -67,8 +72,8 @@ class listener implements EventSubscriberInterface
 	*/
 	public function display_24_hour_stats($event)
 	{
-		// if the user is a bot, we won’t even process this function...
-		if ($this->user->data['is_bot'])
+		// if the user is a botor doesn't have permission to view who is online, we won’t even process this function...
+		if ($this->user->data['is_bot'] || !$this->auth->acl_get('u_viewonline'))
 		{
 			return;
 		}
@@ -84,19 +89,30 @@ class listener implements EventSubscriberInterface
 		$total_guests_online_24 = $this->obtain_guest_count_24();
 
 		// 24 hour users online list, assign to the template block: lastvisit
+		$user_count = 0;
 		foreach ((array) $active_users as $row)
 		{
-				$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
-				$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
-
-				$this->template->assign_block_vars('lastvisit', array(
-					'USERNAME_FULL'	=> '<span' . $hover_info . '>' . get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']) . '</span>',
-				));
+			// only admins and the user themselves can see the 24 hour activity if the viewonline session is set
+			if ($row['session_viewonline'] != true && (!$this->auth->acl_get('a_') || $row['user_id'] != $this->user->data['user_id']))
+			{
+				continue;
+			}
+			if ($row['session_viewonline'] != true)
+			{
+				$row['username'] = '<em>' . $row['username'] . '</em>';
+			}
+			
+			$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
+			$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
+			++$user_count;
+			$this->template->assign_block_vars('lastvisit', array(
+				'USERNAME_FULL'	=> '<span' . $hover_info . '>' . get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']) . '</span>',
+			));
 		}
 
 		// assign the stats to the template.
 		$this->template->assign_vars(array(
-			'USERS_24HOUR_TOTAL'	=> $this->user->lang('USERS_24HOUR_TOTAL', sizeof($active_users)),
+			'USERS_24HOUR_TOTAL'	=> $this->user->lang('USERS_24HOUR_TOTAL', $user_count),
 			'USERS_ACTIVE'			=> sizeof($active_users),
 			'HOUR_TOPICS'			=> $this->user->lang('24HOUR_TOPICS', $activity['topics']),
 			'HOUR_POSTS'			=> $this->user->lang('24HOUR_POSTS', $activity['posts']),
@@ -119,7 +135,7 @@ class listener implements EventSubscriberInterface
 			// grab a list of users who are currently online
 			// and users who have visited in the last 24 hours
 			$sql_ary = array(
-				'SELECT'	=> 'u.user_id, u.user_colour, u.username, u.user_type, u.user_lastvisit, MAX(s.session_time) as session_time',
+				'SELECT'	=> 'u.user_id, u.user_colour, u.username, u.user_type, u.user_lastvisit, MAX(s.session_time) as session_time, s.session_viewonline',
 				'FROM'		=> array(USERS_TABLE => 'u'),
 				'LEFT_JOIN'	=> array(
 					array(
@@ -140,8 +156,8 @@ class listener implements EventSubscriberInterface
 			}
 			$this->db->sql_freeresult($result);
 
-			// cache this data for 5 minutes, this improves performance
-			$this->cache->put('_24hour_users', $active_users, 300);
+			// cache this data for 1 hour, this improves performance
+			$this->cache->put('_24hour_users', $active_users, 3600);
 		}
 
 		return $active_users;
@@ -185,8 +201,8 @@ class listener implements EventSubscriberInterface
 			$activity['users'] = $this->db->sql_fetchfield('new_users');
 			$this->db->sql_freeresult($result);
 
-			// cache this data for 5 minutes, this improves performance
-			$this->cache->put('_24hour_activity', $activity, 300);
+			// cache this data for 1 hour, this improves performance
+			$this->cache->put('_24hour_activity', $activity, 3600);
 		}
 
 		return $activity;
@@ -223,9 +239,8 @@ class listener implements EventSubscriberInterface
 
 			$this->db->sql_freeresult($result);
 
-			// cache this stuff for, ohhhh, how about 5 minutes
-			// change 300 to whatever number to reduce or increase the cache time
-			$this->cache->put('_total_guests_online_24', $total_guests_online_24, 300);
+			// cache this data for 1 hour, this improves performance
+			$this->cache->put('_total_guests_online_24', $total_guests_online_24, 3600);
 		}
 
 		return $total_guests_online_24;
