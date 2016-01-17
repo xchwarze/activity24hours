@@ -72,8 +72,8 @@ class listener implements EventSubscriberInterface
 	*/
 	public function display_24_hour_stats($event)
 	{
-		// if the user is a botor doesn't have permission to view who is online, we won’t even process this function...
-		if ($this->user->data['is_bot'] || !$this->auth->acl_get('u_viewonline'))
+		// if the user is a bot
+		if ($this->user->data['is_bot'])
 		{
 			return;
 		}
@@ -90,24 +90,29 @@ class listener implements EventSubscriberInterface
 
 		// 24 hour users online list, assign to the template block: lastvisit
 		$user_count = 0;
-		foreach ((array) $active_users as $row)
+		$authed_24_hours_list = false;
+		if ($this->auth->acl_get('u_viewonline'))
 		{
-			// only admins and the user themselves can see the 24 hour activity if the viewonline session is set
-			if ($row['session_viewonline'] != true && (!$this->auth->acl_get('a_') || $row['user_id'] != $this->user->data['user_id']))
+			$authed_24_hours_list = true;
+			foreach ((array) $active_users as $row)
 			{
-				continue;
-			}
-			if ($row['session_viewonline'] != true)
-			{
-				$row['username'] = '<em>' . $row['username'] . '</em>';
-			}
+				// only admins and the user themselves can see the 24 hour activity if the viewonline session is set
+				if ($row['session_viewonline'] != true && (!$this->auth->acl_get('a_') || $row['user_id'] != $this->user->data['user_id']))
+				{
+					continue;
+				}
+				if ($row['session_viewonline'] != true)
+				{
+					$row['username'] = '<em>' . $row['username'] . '</em>';
+				}
 
-			$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
-			$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
-			++$user_count;
-			$this->template->assign_block_vars('lastvisit', array(
-				'USERNAME_FULL'	=> '<span' . $hover_info . '>' . get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']) . '</span>',
-			));
+				$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
+				$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
+				++$user_count;
+				$this->template->assign_block_vars('lastvisit', array(
+					'USERNAME_FULL'	=> '<span' . $hover_info . '>' . get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']) . '</span>',
+				));
+			}
 		}
 
 		// assign the stats to the template.
@@ -118,6 +123,8 @@ class listener implements EventSubscriberInterface
 			'HOUR_POSTS'			=> $this->user->lang('24HOUR_POSTS', $activity['posts']),
 			'HOUR_USERS'			=> $this->user->lang('24HOUR_USERS', $activity['users']),
 			'GUEST_ONLINE_24'		=> $this->user->lang('GUEST_ONLINE_24', $total_guests_online_24),
+			'S_CAN_VIEW_24_HOURS'	=> true,
+			'S_CAN_VIEW_24_HOURS_LIST'	=> $authed_24_hours_list,
 		));
 	}
 
