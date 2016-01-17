@@ -79,20 +79,20 @@ class listener implements EventSubscriberInterface
 		}
 
 		$this->user->add_lang_ext('rmcgirr83/activity24hours', 'common');
-		// obtain user activity data
-		$active_users = $this->obtain_active_user_data();
 
 		// obtain posts/topics/new users activity
 		$activity = $this->obtain_activity_data();
 
-		// Obtain guests data
-		$total_guests_online_24 = $this->obtain_guest_count_24();
-
 		// 24 hour users online list, assign to the template block: lastvisit
-		$user_count = 0;
 		$authed_24_hours_list = false;
-		if ($this->auth->acl_get('u_viewonline'))
+		if ($this->auth->acl_get('u_viewonline') || $this->auth->acl_get('a_'))
 		{
+			$user_count = 0;
+			// obtain user activity data
+			$active_users = $this->obtain_active_user_data();
+			// Obtain guests data
+			$total_guests_online_24 = $this->obtain_guest_count_24();
+
 			$authed_24_hours_list = true;
 			foreach ((array) $active_users as $row)
 			{
@@ -113,16 +113,19 @@ class listener implements EventSubscriberInterface
 					'USERNAME_FULL'	=> '<span' . $hover_info . '>' . get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']) . '</span>',
 				));
 			}
+			// assign the active user stats to the template.
+			$this->template->assign_vars(array(
+				'USERS_24HOUR_TOTAL'	=> $this->user->lang('USERS_24HOUR_TOTAL', $user_count),
+				'USERS_ACTIVE'			=> sizeof($active_users),
+				'GUEST_ONLINE_24'		=> $this->user->lang('GUEST_ONLINE_24', $total_guests_online_24),
+			));
 		}
 
-		// assign the stats to the template.
+		// assign the forum stats to the template.
 		$this->template->assign_vars(array(
-			'USERS_24HOUR_TOTAL'	=> $this->user->lang('USERS_24HOUR_TOTAL', $user_count),
-			'USERS_ACTIVE'			=> sizeof($active_users),
 			'HOUR_TOPICS'			=> $this->user->lang('24HOUR_TOPICS', $activity['topics']),
 			'HOUR_POSTS'			=> $this->user->lang('24HOUR_POSTS', $activity['posts']),
 			'HOUR_USERS'			=> $this->user->lang('24HOUR_USERS', $activity['users']),
-			'GUEST_ONLINE_24'		=> $this->user->lang('GUEST_ONLINE_24', $total_guests_online_24),
 			'S_CAN_VIEW_24_HOURS'	=> true,
 			'S_CAN_VIEW_24_HOURS_LIST'	=> $authed_24_hours_list,
 		));
