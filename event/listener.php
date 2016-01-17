@@ -101,7 +101,7 @@ class listener implements EventSubscriberInterface
 			{
 				$row['username'] = '<em>' . $row['username'] . '</em>';
 			}
-			
+
 			$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
 			$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
 			++$user_count;
