@@ -91,14 +91,16 @@ class listener implements EventSubscriberInterface
 		$user_count = 0;
 		foreach ((array) $active_users as $row)
 		{
-			// only admins and the user themselves can see the 24 hour activity if the viewonline session is set
-			if ($row['session_viewonline'] != true && (!$this->auth->acl_get('u_viewonline') || $row['user_id'] != $this->user->data['user_id']))
-			{
-				continue;
-			}
 			if ($row['session_viewonline'] != true)
 			{
-				$row['username'] = '<em>' . $row['username'] . '</em>';
+				if ($this->auth->acl_get('u_viewonline') || $row['user_id'] === $this->user->data['user_id'])
+				{
+					$row['username'] = '<em>' . $row['username'] . '</em>';
+				}
+				else
+				{
+					continue;
+				}
 			}
 
 			$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
@@ -123,7 +125,6 @@ class listener implements EventSubscriberInterface
 			'HOUR_POSTS'			=> $this->user->lang('24HOUR_POSTS', $activity['posts']),
 			'HOUR_USERS'			=> $this->user->lang('24HOUR_USERS', $activity['users']),
 			'S_CAN_VIEW_24_HOURS'	=> true,
-			'S_CAN_VIEW_24_HOURS_LIST'	=> $authed_24_hours_list,
 		));
 	}
 
@@ -162,8 +163,8 @@ class listener implements EventSubscriberInterface
 			}
 			$this->db->sql_freeresult($result);
 
-			// cache this data for 1 hour, this improves performance
-			$this->cache->put('_24hour_users', $active_users, 3600);
+			// cache this data for 5 minutes, this improves performance
+			$this->cache->put('_24hour_users', $active_users, 300);
 		}
 
 		return $active_users;
@@ -207,8 +208,8 @@ class listener implements EventSubscriberInterface
 			$activity['users'] = $this->db->sql_fetchfield('new_users');
 			$this->db->sql_freeresult($result);
 
-			// cache this data for 1 hour, this improves performance
-			$this->cache->put('_24hour_activity', $activity, 3600);
+			// cache this data for 5 minutes, this improves performance
+			$this->cache->put('_24hour_activity', $activity, 300);
 		}
 
 		return $activity;
@@ -245,8 +246,8 @@ class listener implements EventSubscriberInterface
 
 			$this->db->sql_freeresult($result);
 
-			// cache this data for 1 hour, this improves performance
-			$this->cache->put('_total_guests_online_24', $total_guests_online_24, 3600);
+			// cache this data for 5 minutes, this improves performance
+			$this->cache->put('_total_guests_online_24', $total_guests_online_24, 300);
 		}
 
 		return $total_guests_online_24;
