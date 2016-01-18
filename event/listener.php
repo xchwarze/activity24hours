@@ -83,46 +83,42 @@ class listener implements EventSubscriberInterface
 		// obtain posts/topics/new users activity
 		$activity = $this->obtain_activity_data();
 
-		// 24 hour users online list, assign to the template block: lastvisit
-		$authed_24_hours_list = false;
-		if ($this->auth->acl_get('u_viewonline') || $this->auth->acl_get('a_'))
+		// obtain user activity data
+		$active_users = $this->obtain_active_user_data();
+		// Obtain guests data
+		$total_guests_online_24 = $this->obtain_guest_count_24();
+
+		$user_count = 0;
+		foreach ((array) $active_users as $row)
 		{
-			$user_count = 0;
-			// obtain user activity data
-			$active_users = $this->obtain_active_user_data();
-			// Obtain guests data
-			$total_guests_online_24 = $this->obtain_guest_count_24();
-
-			$authed_24_hours_list = true;
-			foreach ((array) $active_users as $row)
+			// only admins and the user themselves can see the 24 hour activity if the viewonline session is set
+			if ($row['session_viewonline'] != true && (!$this->auth->acl_get('u_viewonline') || $row['user_id'] != $this->user->data['user_id']))
 			{
-				// only admins and the user themselves can see the 24 hour activity if the viewonline session is set
-				if ($row['session_viewonline'] != true && (!$this->auth->acl_get('a_') || $row['user_id'] != $this->user->data['user_id']))
-				{
-					continue;
-				}
-				if ($row['session_viewonline'] != true)
-				{
-					$row['username'] = '<em>' . $row['username'] . '</em>';
-				}
-
-				$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
-				$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
-				++$user_count;
-				$this->template->assign_block_vars('lastvisit', array(
-					'USERNAME_FULL'	=> '<span' . $hover_info . '>' . get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']) . '</span>',
-				));
+				continue;
 			}
+			if ($row['session_viewonline'] != true)
+			{
+				$row['username'] = '<em>' . $row['username'] . '</em>';
+			}
+
+			$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
+			$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
+			++$user_count;
+			$this->template->assign_block_vars('lastvisit', array(
+				'USERNAME_FULL'	=> '<span' . $hover_info . '>' . get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']) . '</span>',
+			));
+
 			// assign the active user stats to the template.
 			$this->template->assign_vars(array(
-				'USERS_24HOUR_TOTAL'	=> $this->user->lang('USERS_24HOUR_TOTAL', $user_count),
-				'USERS_ACTIVE'			=> sizeof($active_users),
-				'GUEST_ONLINE_24'		=> $this->user->lang('GUEST_ONLINE_24', $total_guests_online_24),
+
 			));
 		}
 
 		// assign the forum stats to the template.
 		$this->template->assign_vars(array(
+			'USERS_24HOUR_TOTAL'	=> $this->user->lang('USERS_24HOUR_TOTAL', $user_count),
+			'USERS_ACTIVE'			=> $user_count,
+			'GUEST_ONLINE_24'		=> $this->user->lang('GUEST_ONLINE_24', $total_guests_online_24),
 			'HOUR_TOPICS'			=> $this->user->lang('24HOUR_TOPICS', $activity['topics']),
 			'HOUR_POSTS'			=> $this->user->lang('24HOUR_POSTS', $activity['posts']),
 			'HOUR_USERS'			=> $this->user->lang('24HOUR_USERS', $activity['users']),
