@@ -91,7 +91,7 @@ class listener implements EventSubscriberInterface
 		$user_count = 0;
 		foreach ((array) $active_users as $row)
 		{
-			if ($row['session_viewonline'] != true)
+			if (!empty($row['session_viewonline']) && $row['session_viewonline'] != true)
 			{
 				if ($this->auth->acl_get('u_viewonline') || $row['user_id'] === $this->user->data['user_id'])
 				{
