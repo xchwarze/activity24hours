@@ -226,7 +226,7 @@ class listener implements EventSubscriberInterface
 
 		$total_guests_online_24 = 0;
 		if ($this->config['load_online_guests'])
-		{	
+		{
 			// Get number of online guests for the past 24 hours
 			// caching and main sql if none yet
 			if (($total_guests_online_24 = $this->cache->get('_total_guests_online_24')) === false)
