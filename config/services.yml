@@ -3,7 +3,8 @@ services:
         class: rmcgirr83\activity24hours\event\listener
         arguments:
             - @auth
-            - @cache	
+            - @cache
+            - @config
             - @dbal.conn
             - @template
             - @user

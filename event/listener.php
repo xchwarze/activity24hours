@@ -26,6 +26,9 @@ class listener implements EventSubscriberInterface
 	/** @var \phpbb\cache\service */
 	protected $cache;
 
+	/** @var \phpbb\config\config */
+	protected $config;
+
 	/** @var \phpbb\db\driver\driver */
 	protected $db;
 
@@ -38,12 +41,14 @@ class listener implements EventSubscriberInterface
 	public function __construct(
 		\phpbb\auth\auth $auth,
 		\phpbb\cache\service $cache,
+		\phpbb\config\config $config,
 		\phpbb\db\driver\driver_interface $db,
 		\phpbb\template\template $template,
 		\phpbb\user $user)
 	{
 		$this->auth = $auth;
 		$this->cache = $cache;
+		$this->config = $config;
 		$this->db = $db;
 		$this->template = $template;
 		$this->user = $user;
@@ -85,6 +90,7 @@ class listener implements EventSubscriberInterface
 
 		// obtain user activity data
 		$active_users = $this->obtain_active_user_data();
+
 		// Obtain guests data
 		$total_guests_online_24 = $this->obtain_guest_count_24();
 
@@ -120,7 +126,7 @@ class listener implements EventSubscriberInterface
 		$this->template->assign_vars(array(
 			'USERS_24HOUR_TOTAL'	=> $this->user->lang('USERS_24HOUR_TOTAL', $user_count),
 			'USERS_ACTIVE'			=> $user_count,
-			'GUEST_ONLINE_24'		=> $this->user->lang('GUEST_ONLINE_24', $total_guests_online_24),
+			'GUEST_ONLINE_24'		=> $this->config['load_online_guests'] ? $this->user->lang('GUEST_ONLINE_24', $total_guests_online_24) : '',
 			'HOUR_TOPICS'			=> $this->user->lang('24HOUR_TOPICS', $activity['topics']),
 			'HOUR_POSTS'			=> $this->user->lang('24HOUR_POSTS', $activity['posts']),
 			'HOUR_USERS'			=> $this->user->lang('24HOUR_USERS', $activity['users']),
@@ -217,39 +223,42 @@ class listener implements EventSubscriberInterface
 
 	private function obtain_guest_count_24()
 	{
-		$total_guests_online_24 = 0;
-		// Get number of online guests for the past 24 hours
-		// caching and main sql if none yet
-		if (($total_guests_online_24 = $this->cache->get('_total_guests_online_24')) === false)
-		{
-			// teh time
-			$interval = time() - 86400;
 
-			if ($this->db->get_sql_layer() === 'sqlite' || $this->db->get_sql_layer() === 'sqlite3')
+		$total_guests_online_24 = 0;
+		if ($this->config['load_online_guests'])
+		{	
+			// Get number of online guests for the past 24 hours
+			// caching and main sql if none yet
+			if (($total_guests_online_24 = $this->cache->get('_total_guests_online_24')) === false)
 			{
-				$sql = 'SELECT COUNT(session_ip) as num_guests_24
-					FROM (
-						SELECT DISTINCT session_ip
+				// teh time
+				$interval = time() - 86400;
+
+				if ($this->db->get_sql_layer() === 'sqlite' || $this->db->get_sql_layer() === 'sqlite3')
+				{
+					$sql = 'SELECT COUNT(session_ip) as num_guests_24
+						FROM (
+							SELECT DISTINCT session_ip
+							FROM ' . SESSIONS_TABLE . '
+							WHERE session_user_id = ' . ANONYMOUS . '
+								AND session_time >= ' . ($interval - ((int) ($interval % 60))) . ')';
+				}
+				else
+				{
+					$sql = 'SELECT COUNT(DISTINCT session_ip) as num_guests_24
 						FROM ' . SESSIONS_TABLE . '
 						WHERE session_user_id = ' . ANONYMOUS . '
-							AND session_time >= ' . ($interval - ((int) ($interval % 60))) . ')';
-			}
-			else
-			{
-				$sql = 'SELECT COUNT(DISTINCT session_ip) as num_guests_24
-					FROM ' . SESSIONS_TABLE . '
-					WHERE session_user_id = ' . ANONYMOUS . '
-						AND session_time >= ' . ($interval - ((int) ($interval % 60)));
-			}
-			$result = $this->db->sql_query($sql);
-			$total_guests_online_24 = (int) $this->db->sql_fetchfield('num_guests_24');
+							AND session_time >= ' . ($interval - ((int) ($interval % 60)));
+				}
+				$result = $this->db->sql_query($sql);
+				$total_guests_online_24 = (int) $this->db->sql_fetchfield('num_guests_24');
 
-			$this->db->sql_freeresult($result);
+				$this->db->sql_freeresult($result);
 
-			// cache this data for 5 minutes, this improves performance
-			$this->cache->put('_total_guests_online_24', $total_guests_online_24, 300);
+				// cache this data for 5 minutes, this improves performance
+				$this->cache->put('_total_guests_online_24', $total_guests_online_24, 300);
+			}
 		}
-
 		return $total_guests_online_24;
 	}
 }
