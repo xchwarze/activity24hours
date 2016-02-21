@@ -141,9 +141,10 @@ class listener implements EventSubscriberInterface
 	 */
 	private function obtain_active_user_data()
 	{
+		$active_users = array();
+
 		if (($active_users = $this->cache->get('_24hour_users')) === false)
 		{
-			$active_users = array();
 
 			// grab a list of users who are currently online
 			// and users who have visited in the last 24 hours
@@ -183,12 +184,12 @@ class listener implements EventSubscriberInterface
 	 */
 	private function obtain_activity_data()
 	{
+		$activity = array();
+
 		if (($activity = $this->cache->get('_24hour_activity')) === false)
 		{
 			// set interval to 24 hours ago
 			$interval = time() - 86400;
-
-			$activity = array();
 
 			// total new posts in the last 24 hours
 			$sql = 'SELECT COUNT(post_id) AS new_posts
