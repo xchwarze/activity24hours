@@ -97,7 +97,7 @@ class listener implements EventSubscriberInterface
 		$user_count = 0;
 		foreach ((array) $active_users as $row)
 		{
-			if (!empty($row['session_viewonline']) && $row['session_viewonline'] != true)
+			if (empty($row['session_viewonline']) || !$row['user_allow_viewonline'])
 			{
 				if ($this->auth->acl_get('u_viewonline') || $row['user_id'] === $this->user->data['user_id'])
 				{
@@ -114,11 +114,6 @@ class listener implements EventSubscriberInterface
 			++$user_count;
 			$this->template->assign_block_vars('lastvisit', array(
 				'USERNAME_FULL'	=> '<span' . $hover_info . '>' . get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']) . '</span>',
-			));
-
-			// assign the active user stats to the template.
-			$this->template->assign_vars(array(
-
 			));
 		}
 
@@ -142,14 +137,13 @@ class listener implements EventSubscriberInterface
 	private function obtain_active_user_data()
 	{
 		$active_users = array();
-
 		if (($active_users = $this->cache->get('_24hour_users')) === false)
 		{
 
 			// grab a list of users who are currently online
 			// and users who have visited in the last 24 hours
 			$sql_ary = array(
-				'SELECT'	=> 'u.user_id, u.user_colour, u.username, u.user_type, u.user_lastvisit, MAX(s.session_time) as session_time, s.session_viewonline',
+				'SELECT'	=> 'u.user_id, u.user_colour, u.username, u.user_type, u.user_lastvisit, u.user_allow_viewonline, MAX(s.session_time) as session_time, s.session_viewonline',
 				'FROM'		=> array(USERS_TABLE => 'u'),
 				'LEFT_JOIN'	=> array(
 					array(
@@ -173,7 +167,6 @@ class listener implements EventSubscriberInterface
 			// cache this data for 5 minutes, this improves performance
 			$this->cache->put('_24hour_users', $active_users, 300);
 		}
-
 		return $active_users;
 	}
 
@@ -185,7 +178,6 @@ class listener implements EventSubscriberInterface
 	private function obtain_activity_data()
 	{
 		$activity = array();
-
 		if (($activity = $this->cache->get('_24hour_activity')) === false)
 		{
 			// set interval to 24 hours ago
@@ -218,7 +210,6 @@ class listener implements EventSubscriberInterface
 			// cache this data for 5 minutes, this improves performance
 			$this->cache->put('_24hour_activity', $activity, 300);
 		}
-
 		return $activity;
 	}
 
