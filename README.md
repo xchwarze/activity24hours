@@ -5,7 +5,7 @@ phpBB 3.1 Activity 24 Hours
 
 Extension lists of all registered users who have visited the board in the last 24 hours as well as lists stats on the number of new posts, new topics and new users within the last 24 hours.
 
-[![Build Status](https://travis-ci.org/RMcGirr83/phpBB-3.1-activity24hours.svg?branch=master)](https://travis-ci.org/RMcGirr83/phpBB-3.1-activity24hours)
+[![Build Status](https://travis-ci.org/rmcgirr83/phpBB-3.1-activity24hours.svg?branch=master)](https://travis-ci.org/rmcgirr83/phpBB-3.1-activity24hours)
 
 ## Installation
 
@@ -14,7 +14,7 @@ Clone (or download and move) the repository into the folder ext/rmcgirr83/activi
 
 ```
 cd phpBB3
-git clone https://github.com/RMcGirr83/phpBB-3.1-activity24hours.git ext/rmcgirr83/activity24hours/
+git clone https://github.com/rmcgirr83/phpBB-3.1-activity24hours.git ext/rmcgirr83/activity24hours/
 ```
 
 ### 2. activate
