@@ -97,7 +97,7 @@ class listener implements EventSubscriberInterface
 		$user_count = 0;
 		foreach ((array) $active_users as $row)
 		{
-			if (empty($row['session_viewonline']) || !$row['user_allow_viewonline'])
+			if (!$row['session_viewonline'] || !$row['user_allow_viewonline'])
 			{
 				if ($this->auth->acl_get('u_viewonline') || $row['user_id'] === $this->user->data['user_id'])
 				{
@@ -139,7 +139,6 @@ class listener implements EventSubscriberInterface
 		$active_users = array();
 		if (($active_users = $this->cache->get('_24hour_users')) === false)
 		{
-
 			// grab a list of users who are currently online
 			// and users who have visited in the last 24 hours
 			$sql_ary = array(
@@ -215,7 +214,6 @@ class listener implements EventSubscriberInterface
 
 	private function obtain_guest_count_24()
 	{
-
 		$total_guests_online_24 = 0;
 		if ($this->config['load_online_guests'])
 		{
