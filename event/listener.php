@@ -52,6 +52,7 @@ class listener implements EventSubscriberInterface
 		$this->db = $db;
 		$this->template = $template;
 		$this->user = $user;
+		$this->interval = time() - 86400;
 	}
 
 	/**
@@ -109,6 +110,11 @@ class listener implements EventSubscriberInterface
 				}
 			}
 
+			if ($row['user_lastvisit'] < $this->interval && $row['session_time'] < $this->interval)
+			{
+				continue;
+			}
+
 			$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
 			$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
 			++$user_count;
@@ -150,7 +156,7 @@ class listener implements EventSubscriberInterface
 						'ON'	=> 's.session_user_id = u.user_id',
 					),
 				),
-				'WHERE'		=> 'u.user_lastvisit > ' . (time() - 86400) . ' OR s.session_user_id <> ' . ANONYMOUS,
+				'WHERE'		=> 'u.user_lastvisit > ' . $this->interval . ' OR s.session_user_id <> ' . ANONYMOUS,
 				'GROUP_BY'	=> 'u.user_id',
 				'ORDER_BY'	=> 'u.username_clean',
 			);
@@ -179,13 +185,11 @@ class listener implements EventSubscriberInterface
 		$activity = array();
 		if (($activity = $this->cache->get('_24hour_activity')) === false)
 		{
-			// set interval to 24 hours ago
-			$interval = time() - 86400;
 
 			// total new posts in the last 24 hours
 			$sql = 'SELECT COUNT(post_id) AS new_posts
 					FROM ' . POSTS_TABLE . '
-					WHERE post_time > ' . $interval;
+					WHERE post_time > ' . $this->interval;
 			$result = $this->db->sql_query($sql);
 			$activity['posts'] = $this->db->sql_fetchfield('new_posts');
 			$this->db->sql_freeresult($result);
@@ -193,7 +197,7 @@ class listener implements EventSubscriberInterface
 			// total new topics in the last 24 hours
 			$sql = 'SELECT COUNT(topic_id) AS new_topics
 					FROM ' . TOPICS_TABLE . '
-					WHERE topic_time > ' . $interval;
+					WHERE topic_time > ' . $this->interval;
 			$result = $this->db->sql_query($sql);
 			$activity['topics'] = $this->db->sql_fetchfield('new_topics');
 			$this->db->sql_freeresult($result);
@@ -201,7 +205,7 @@ class listener implements EventSubscriberInterface
 			// total new users in the last 24 hours, counts inactive users as well
 			$sql = 'SELECT COUNT(user_id) AS new_users
 					FROM ' . USERS_TABLE . '
-					WHERE user_regdate > ' . $interval;
+					WHERE user_regdate > ' . $this->interval;
 			$result = $this->db->sql_query($sql);
 			$activity['users'] = $this->db->sql_fetchfield('new_users');
 			$this->db->sql_freeresult($result);
@@ -221,9 +225,6 @@ class listener implements EventSubscriberInterface
 			// caching and main sql if none yet
 			if (($total_guests_online_24 = $this->cache->get('_total_guests_online_24')) === false)
 			{
-				// teh time
-				$interval = time() - 86400;
-
 				if ($this->db->get_sql_layer() === 'sqlite' || $this->db->get_sql_layer() === 'sqlite3')
 				{
 					$sql = 'SELECT COUNT(session_ip) as num_guests_24
@@ -231,14 +232,14 @@ class listener implements EventSubscriberInterface
 							SELECT DISTINCT session_ip
 							FROM ' . SESSIONS_TABLE . '
 							WHERE session_user_id = ' . ANONYMOUS . '
-								AND session_time >= ' . ($interval - ((int) ($interval % 60))) . ')';
+								AND session_time >= ' . ($this->interval - ((int) ($this->interval % 60))) . ')';
 				}
 				else
 				{
 					$sql = 'SELECT COUNT(DISTINCT session_ip) as num_guests_24
 						FROM ' . SESSIONS_TABLE . '
 						WHERE session_user_id = ' . ANONYMOUS . '
-							AND session_time >= ' . ($interval - ((int) ($interval % 60)));
+							AND session_time >= ' . ($this->interval - ((int) ($this->interval % 60)));
 				}
 				$result = $this->db->sql_query($sql);
 				$total_guests_online_24 = (int) $this->db->sql_fetchfield('num_guests_24');
