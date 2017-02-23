@@ -32,6 +32,9 @@ class listener implements EventSubscriberInterface
 	/** @var \phpbb\db\driver\driver */
 	protected $db;
 
+	/** @var \phpbb\event\dispatcher_interface */
+	protected $dispatcher;
+
 	/** @var \phpbb\template\template */
 	protected $template;
 
@@ -43,16 +46,20 @@ class listener implements EventSubscriberInterface
 		\phpbb\cache\service $cache,
 		\phpbb\config\config $config,
 		\phpbb\db\driver\driver_interface $db,
+		\phpbb\event\dispatcher_interface $dispatcher,
 		\phpbb\template\template $template,
-		\phpbb\user $user)
+		\phpbb\user $user,
+		\rmcgirr83\hidebots\event\listener $hidebots = null)
 	{
 		$this->auth = $auth;
 		$this->cache = $cache;
 		$this->config = $config;
 		$this->db = $db;
+		$this->dispatcher = $dispatcher;
 		$this->template = $template;
 		$this->user = $user;
 		$this->interval = time() - 86400;
+		$this->hidebots = $hidebots;
 	}
 
 	/**
@@ -109,7 +116,12 @@ class listener implements EventSubscriberInterface
 					continue;
 				}
 			}
-
+			// we hide bots according to the hide bots extension
+			$should_hide = (!$this->auth->acl_get('a_') && $this->hidebots !== null) ? true : false;
+			if ($should_hide && $row['user_type'] == USER_IGNORE)
+			{
+				continue;
+			}
 			if ($row['user_lastvisit'] < $this->interval && $row['session_time'] < $this->interval)
 			{
 				continue;
@@ -160,6 +172,16 @@ class listener implements EventSubscriberInterface
 				'GROUP_BY'	=> 'u.user_id',
 				'ORDER_BY'	=> 'u.username_clean',
 			);
+
+			/**
+			* Modify sql_ary
+			*
+			* @event rmcgirr83.activity24hours.modify_sql_ary
+			* @var array	sql_ary			An array of the sql query
+			* @since 1.0.4
+			*/
+			$vars = array('sql_ary');
+			extract($this->dispatcher->trigger_event('rmcgirr83.activity24hours.modify_sql_ary', compact($vars)));
 
 			$result = $this->db->sql_query($this->db->sql_build_query('SELECT', $sql_ary));
 
