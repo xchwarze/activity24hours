@@ -227,7 +227,8 @@ class listener implements EventSubscriberInterface
 			// total new users in the last 24 hours, counts inactive users as well
 			$sql = 'SELECT COUNT(user_id) AS new_users
 					FROM ' . USERS_TABLE . '
-					WHERE user_regdate > ' . $this->interval;
+					WHERE user_regdate > ' . $this->interval . '
+						AND user_type <> ' . USER_IGNORE;
 			$result = $this->db->sql_query($sql);
 			$activity['users'] = $this->db->sql_fetchfield('new_users');
 			$this->db->sql_freeresult($result);
