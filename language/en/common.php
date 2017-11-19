@@ -34,10 +34,8 @@ if (empty($lang) || !is_array($lang))
 // ’ » “ ” …
 
 $lang = array_merge($lang, array(
-	'USERS_24HOUR_TOTAL'	=> array(
-		1 => '%d user',
-		2 => '%d users',
-	),
+	'USERS_24HOUR_TOTAL'	=>  '%d registered,',
+	'HIDDEN_24HOUR_TOTAL'	=> ' %d hidden ',
 	'GUEST_ONLINE_24'		=> array(
 		1 => ' and %d guest',
 		2 => ' and %d guests',
@@ -47,5 +45,9 @@ $lang = array_merge($lang, array(
 	'24HOUR_POSTS'			=> 'New posts %d',
 	'24HOUR_USERS'			=> 'New users %d',
 
-	'TWENTYFOURHOUR_STATS'			=> 'Activity over the last 24 hours',
+	'TWENTYFOURHOUR_STATS'	=> 'Activity over the last 24 hours',
+	'TOTAL_24HOUR_USERS'	=> array(
+		1 => 'In total there was %d user :: ',
+		2 => 'In total there were %d users :: ',
+	),
 ));
