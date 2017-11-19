@@ -171,7 +171,7 @@ class listener implements EventSubscriberInterface
 						'ON'	=> 's.session_user_id = u.user_id',
 					),
 				),
-				'WHERE'		=> 'u.user_lastvisit > ' . $this->interval . ' OR s.session_user_id <> ' . ANONYMOUS,
+				'WHERE'		=> 'u.user_lastvisit > ' . (int) $this->interval . ' OR s.session_user_id <> ' . ANONYMOUS,
 				'GROUP_BY'	=> 'u.user_id',
 				'ORDER_BY'	=> 'u.username_clean',
 			);
@@ -214,7 +214,7 @@ class listener implements EventSubscriberInterface
 			// total new posts in the last 24 hours
 			$sql = 'SELECT COUNT(post_id) AS new_posts
 					FROM ' . POSTS_TABLE . '
-					WHERE post_time > ' . $this->interval;
+					WHERE post_time > ' . (int) $this->interval;
 			$result = $this->db->sql_query($sql);
 			$activity['posts'] = $this->db->sql_fetchfield('new_posts');
 			$this->db->sql_freeresult($result);
@@ -222,7 +222,7 @@ class listener implements EventSubscriberInterface
 			// total new topics in the last 24 hours
 			$sql = 'SELECT COUNT(topic_id) AS new_topics
 					FROM ' . TOPICS_TABLE . '
-					WHERE topic_time > ' . $this->interval;
+					WHERE topic_time > ' . (int) $this->interval;
 			$result = $this->db->sql_query($sql);
 			$activity['topics'] = $this->db->sql_fetchfield('new_topics');
 			$this->db->sql_freeresult($result);
@@ -230,7 +230,7 @@ class listener implements EventSubscriberInterface
 			// total new users in the last 24 hours, counts inactive users as well
 			$sql = 'SELECT COUNT(user_id) AS new_users
 					FROM ' . USERS_TABLE . '
-					WHERE user_regdate > ' . $this->interval . '
+					WHERE user_regdate > ' . (int) $this->interval . '
 						AND user_type <> ' . USER_IGNORE;
 			$result = $this->db->sql_query($sql);
 			$activity['users'] = $this->db->sql_fetchfield('new_users');
