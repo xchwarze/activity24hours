@@ -124,6 +124,7 @@ class listener implements EventSubscriberInterface
 				}
 				else
 				{
+					++$user_count;
 					continue;
 				}
 			}
@@ -138,10 +139,10 @@ class listener implements EventSubscriberInterface
 
 		// assign the forum stats to the template.
 		$this->template->assign_vars(array(
-			'TOTAL_24HOUR_USERS'	=> $this->user->lang('TOTAL_24HOUR_USERS', $user_count),
+			'TOTAL_24HOUR_USERS'	=> $this->user->lang('TOTAL_24HOUR_USERS', $user_count + $total_guests_online_24),
 			'USERS_24HOUR_TOTAL'	=> $this->user->lang('USERS_24HOUR_TOTAL', $user_count - $hidden_count),
 			'HIDDEN_24HOUR_TOTAL'	=> $this->user->lang('HIDDEN_24HOUR_TOTAL', $hidden_count),
-			'USERS_ACTIVE'			=> $user_count + $hidden_count,
+			'USERS_ACTIVE'			=> $user_count + $hidden_count + $total_guests_online_24,
 			'GUEST_ONLINE_24'		=> $this->config['load_online_guests'] ? $this->user->lang('GUEST_ONLINE_24', $total_guests_online_24) : '',
 			'HOUR_TOPICS'			=> $this->user->lang('24HOUR_TOPICS', $activity['topics']),
 			'HOUR_POSTS'			=> $this->user->lang('24HOUR_POSTS', $activity['posts']),
@@ -230,8 +231,7 @@ class listener implements EventSubscriberInterface
 			// total new users in the last 24 hours, counts inactive users as well
 			$sql = 'SELECT COUNT(user_id) AS new_users
 					FROM ' . USERS_TABLE . '
-					WHERE user_regdate > ' . (int) $this->interval . '
-						AND user_type <> ' . USER_IGNORE;
+					WHERE user_regdate > ' . (int) $this->interval;
 			$result = $this->db->sql_query($sql);
 			$activity['users'] = $this->db->sql_fetchfield('new_users');
 			$this->db->sql_freeresult($result);
