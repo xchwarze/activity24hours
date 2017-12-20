@@ -138,7 +138,7 @@ class listener implements EventSubscriberInterface
 		}
 
 		// assign the forum stats to the template.
-		$this->template->assign_vars(array(
+		$template_data = array(
 			'TOTAL_24HOUR_USERS'	=> $this->user->lang('TOTAL_24HOUR_USERS', $user_count + $total_guests_online_24),
 			'USERS_24HOUR_TOTAL'	=> $this->user->lang('USERS_24HOUR_TOTAL', $user_count - $hidden_count),
 			'HIDDEN_24HOUR_TOTAL'	=> $this->user->lang('HIDDEN_24HOUR_TOTAL', $hidden_count),
@@ -148,7 +148,22 @@ class listener implements EventSubscriberInterface
 			'HOUR_POSTS'			=> $this->user->lang('24HOUR_POSTS', $activity['posts']),
 			'HOUR_USERS'			=> $this->user->lang('24HOUR_USERS', $activity['users']),
 			'S_CAN_VIEW_24_HOURS'	=> true,
-		));
+		);
+		/**
+		* Modify activity display
+		*
+		* @event rmcgirr83.activity24hours.modify_activity_display
+		* @var array	activity			An array of the activity posts, topics etc.
+		* @var array	active_users		An array of users active for past x time
+		* @var bool		total_guests_online_24 Count of guests for past x time
+		* @var array	template_data			An array of the template items
+		* @since 1.0.7
+		*/
+		$vars = array('activity', 'active_users', 'total_guests_online_24', 'template_data');
+		extract($this->dispatcher->trigger_event('rmcgirr83.activity24hours.modify_activity_display', compact($vars)));
+
+		// Assign template date to template engine
+		$this->template->assign_vars($template_data);
 	}
 
 	/**

@@ -3,7 +3,7 @@
     "type": "phpbb-extension",
     "description": "Extension lists of all registered users who have visited the board in the last 24 hours as well as lists stats on the number of new posts, new topics and new users within the last 24 hours",
     "version": "1.0.6",
-    "time": "2017-11-19",
+    "time": "2017-12-20",
     "keywords": [
         "phpbb",
         "extension",

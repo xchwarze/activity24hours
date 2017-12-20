@@ -1,9 +1,9 @@
-<!-- IF S_CAN_VIEW_24_HOURS -->
+{% if S_CAN_VIEW_24_HOURS %}
 <div class="stat-block 24stats">
-		<h3 id="twentyfourhour_stats">{L_TWENTYFOURHOUR_STATS}</h3>
+		<h3 id="twentyfourhour_stats">{{ lang('TWENTYFOURHOUR_STATS') }}</h3>
 
-		<p>{HOUR_POSTS} &bull; {HOUR_TOPICS} &bull; {HOUR_USERS}
-		<br>{TOTAL_24HOUR_USERS} {USERS_24HOUR_TOTAL} {HIDDEN_24HOUR_TOTAL} {GUEST_ONLINE_24} {L_LAST_24_HOURS}<!-- IF not USERS_ACTIVE -->{L_NO_ONLINE_USERS}<!-- ELSE --><!-- BEGIN lastvisit --><!-- IF lastvisit.S_FIRST_ROW --><br><!-- ENDIF -->{lastvisit.USERNAME_FULL}<!-- IF not lastvisit.S_LAST_ROW -->{L_COMMA_SEPARATOR} <!-- ENDIF --><!-- END lastvisit --><!-- ENDIF -->
+		<p>{{ HOUR_POSTS }} &bull; {{ HOUR_TOPICS }} &bull; {{ HOUR_USERS }}
+		<br>{{ TOTAL_24HOUR_USERS }} {{ USERS_24HOUR_TOTAL }} {{ HIDDEN_24HOUR_TOTAL }} {{ GUEST_ONLINE_24 }} {{ lang('LAST_24_HOURS') }}{% if not USERS_ACTIVE %}{{ lang('NO_ONLINE_USERS') }}{% else %}{% for lastvisit in loops.lastvisit %}{% if lastvisit.S_FIRST_ROW %}<br>{{ lang('REGISTERED_USERS') }} {% endif %}{{ lastvisit.USERNAME_FULL }}{% if not lastvisit.S_LAST_ROW %}{{ lang('COMMA_SEPARATOR') }} {% endif %}{% endfor %}{% endif %}
 		</p>
 </div>
-<!-- ENDIF -->
+{% endif %}
