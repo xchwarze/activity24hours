@@ -157,7 +157,7 @@ class listener implements EventSubscriberInterface
 		* @var array	active_users		An array of users active for past x time
 		* @var bool		total_guests_online_24 Count of guests for past x time
 		* @var array	template_data			An array of the template items
-		* @since 1.0.7
+		* @since 1.0.6
 		*/
 		$vars = array('activity', 'active_users', 'total_guests_online_24', 'template_data');
 		extract($this->dispatcher->trigger_event('rmcgirr83.activity24hours.modify_activity_display', compact($vars)));
