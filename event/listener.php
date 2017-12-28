@@ -188,7 +188,7 @@ class listener implements EventSubscriberInterface
 					),
 				),
 				'WHERE'		=> 'u.user_lastvisit > ' . (int) $this->interval . ' OR s.session_user_id <> ' . ANONYMOUS,
-				'GROUP_BY'	=> 'u.user_id',
+				'GROUP_BY'	=> 'u.user_id, s.session_viewonline',
 				'ORDER_BY'	=> 'u.username_clean',
 			);
 
