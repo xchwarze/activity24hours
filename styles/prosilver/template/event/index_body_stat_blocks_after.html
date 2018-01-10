@@ -3,7 +3,7 @@
 		<h3 id="twentyfourhour_stats">{{ lang('TWENTYFOURHOUR_STATS') }}</h3>
 
 		<p>{{ HOUR_POSTS }} &bull; {{ HOUR_TOPICS }} &bull; {{ HOUR_USERS }}
-		<br>{{ TOTAL_24HOUR_USERS }} {{ USERS_24HOUR_TOTAL }} {{ HIDDEN_24HOUR_TOTAL }} {{ GUEST_ONLINE_24 }} {{ lang('LAST_24_HOURS') }}{% if not USERS_ACTIVE %}{{ lang('NO_ONLINE_USERS') }}{% else %}{% for lastvisit in loops.lastvisit %}{% if lastvisit.S_FIRST_ROW %}<br>{{ lang('REGISTERED_USERS') }} {% endif %}{{ lastvisit.USERNAME_FULL }}{% if not lastvisit.S_LAST_ROW %}{{ lang('COMMA_SEPARATOR') }} {% endif %}{% endfor %}{% endif %}
+		<br>{{ TOTAL_24HOUR_USERS }} {{ USERS_24HOUR_TOTAL }} {{ HIDDEN_24HOUR_TOTAL }} {{ GUEST_ONLINE_24 }} {{ lang('LAST_24_HOURS') }}{% if not USERS_ACTIVE %}<br>{{ lang('NO_ONLINE_USERS') }}{% else %}{% for lastvisit in loops.lastvisit %}{% if lastvisit.S_FIRST_ROW %}<br>{{ lang('REGISTERED_USERS') }} {% endif %}{{ lastvisit.USERNAME_FULL }}{% if not lastvisit.S_LAST_ROW %}{{ lang('COMMA_SEPARATOR') }} {% endif %}{% endfor %}{% endif %}
 		</p>
 </div>
 {% endif %}
