@@ -324,8 +324,8 @@ class listener implements EventSubscriberInterface
 		* Modify activity look back
 		*
 		* @event rmcgirr83.activity24hours.modify_activity_look_back
-		* @var int		look back	The number of seconds used in the extension
-		* @return		the
+		* @var	int		look_back	The number of seconds used in the extension
+		* @return		the amount of time in seconds
 		* @since 1.0.7
 		*/
 		$vars = array('look_back');
