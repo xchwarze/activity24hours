@@ -129,7 +129,7 @@ class listener implements EventSubscriberInterface
 				}
 			}
 			// to seperate bots from normal users
-			elseif ($row['user_type'] == USER_IGNORE)
+			else if ($row['user_type'] == USER_IGNORE)
 			{
 				++$bot_count;
 				$this->template->assign_block_vars('bot_lastvisit', array(
@@ -309,7 +309,7 @@ class listener implements EventSubscriberInterface
 		return $total_guests_online_24;
 	}
 
-		private function define_interval()
+	public function define_interval()
 	{
 		/* you can define the amount to look back
 		 * be careful with this, it may cause performance issues on your forum
