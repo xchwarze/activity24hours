@@ -127,6 +127,11 @@ class listener implements EventSubscriberInterface
 					$row['username'] = '<em>' . $row['username'] . '</em>';
 					$username_string = get_username_string('full', $row['user_id'], $row['username'], $row['user_colour']);
 				}
+				else
+				{
+					++$user_count;
+					continue;
+				}
 			}
 			// to seperate bots from normal users
 			else if ($row['user_type'] == USER_IGNORE)
@@ -137,11 +142,10 @@ class listener implements EventSubscriberInterface
 				));
 				continue;
 			}
-			else
-			{
-				++$user_count;
-			}
 
+			$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
+			$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
+			++$user_count;
 			$this->template->assign_block_vars('lastvisit', array(
 				'USERNAME_FULL'	=> '<span' . $hover_info . '>' . $username_string . '</span>',
 			));
@@ -151,8 +155,8 @@ class listener implements EventSubscriberInterface
 		$template_data = array(
 			'BOTS_ACTIVE'			=> $bot_count,
 			'USERS_ACTIVE'			=> $user_count + $hidden_count,
-			'TOTAL_24HOUR_USERS'	=> $this->user->lang('TOTAL_24HOUR_USERS', $user_count + $total_guests_online_24 + $bot_count + $hidden_count),
-			'USERS_24HOUR_TOTAL'	=> $this->user->lang('USERS_24HOUR_TOTAL', $user_count),
+			'TOTAL_24HOUR_USERS'	=> $this->user->lang('TOTAL_24HOUR_USERS', $user_count + $total_guests_online_24 + $bot_count),
+			'USERS_24HOUR_TOTAL'	=> $this->user->lang('USERS_24HOUR_TOTAL', $user_count - $hidden_count),
 			'BOTS_24HOUR_TOTAL'		=> $this->user->lang('BOTS_24HOUR_TOTAL', $bot_count),
 			'HIDDEN_24HOUR_TOTAL'	=> $this->user->lang('HIDDEN_24HOUR_TOTAL', $hidden_count),
 			'GUEST_ONLINE_24'		=> $total_guests_online_24 ? $this->user->lang('GUEST_ONLINE_24', $total_guests_online_24) : '',
