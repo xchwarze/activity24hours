@@ -2,8 +2,8 @@
     "name": "rmcgirr83/activity24hours",
     "type": "phpbb-extension",
     "description": "Extension lists of all registered users who have visited the board in the last 24 hours as well as lists stats on the number of new posts, new topics and new users within the last 24 hours",
-    "version": "1.0.7",
-    "time": "2018-01-13",
+    "version": "1.0.8",
+    "time": "2018-07-24",
     "keywords": [
         "phpbb",
         "extension",
@@ -12,7 +12,7 @@
         "stats",
         "24 hours"
     ],
-    "license": "GPL-2.0-only",
+    "license": "GPL-2.0",
     "authors": [
         {
             "name": "Rich McGirr",
