@@ -103,16 +103,15 @@ class listener implements EventSubscriberInterface
 
 		$user_count = $bot_count = $hidden_count = 0;
 		$interval = $this->define_interval();
+		// we hide bots according to the hide bots extension
+		$should_hide = (!$this->auth->acl_get('a_') && $this->hidebots !== null) ? true : false;
+
 		// parse the activity
 		foreach ((array) $active_users as $row)
 		{
-			// we hide bots according to the hide bots extension
-			$should_hide = (!$this->auth->acl_get('a_') && $this->hidebots !== null) ? true : false;
 
 			// the users stuff...this is changed below depending
 			$username_string = $this->auth->acl_get('u_viewprofile') ? get_username_string('full', $row['user_id'], $row['username'], $row['user_colour']) : get_username_string('no_profile', $row['user_id'], $row['username'], $row['user_colour']);
-			$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
-			$hover_info = ' title="' . $this->user->format_date($max_last_visit, false, false) . '"';
 
 			if (($should_hide && $row['user_type'] == USER_IGNORE) || ($row['user_lastvisit'] < $interval && $row['session_time'] < $interval))
 			{
