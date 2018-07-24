@@ -108,13 +108,13 @@ class listener implements EventSubscriberInterface
 		{
 			// we hide bots according to the hide bots extension
 			$should_hide = (!$this->auth->acl_get('a_') && $this->hidebots !== null) ? true : false;
-			
+
 			// the users stuff...this is changed below depending
 			$username_string = $this->auth->acl_get('u_viewprofile') ? get_username_string('full', $row['user_id'], $row['username'], $row['user_colour']) : get_username_string('no_profile', $row['user_id'], $row['username'], $row['user_colour']);
 			$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
 			$hover_info = ' title="' . $this->user->format_date($max_last_visit, false, false) . '"';
-			
-		if (($should_hide && $row['user_type'] == USER_IGNORE) || ($row['user_lastvisit'] < $interval && $row['session_time'] < $interval))
+
+			if (($should_hide && $row['user_type'] == USER_IGNORE) || ($row['user_lastvisit'] < $interval && $row['session_time'] < $interval))
 			{
 				continue;
 			}
@@ -125,6 +125,7 @@ class listener implements EventSubscriberInterface
 				if ($this->auth->acl_get('u_viewonline') || $row['user_id'] === $this->user->data['user_id'])
 				{
 					$row['username'] = '<em>' . $row['username'] . '</em>';
+					$username_string = get_username_string('full', $row['user_id'], $row['username'], $row['user_colour']);
 				}
 				else
 				{
@@ -146,7 +147,7 @@ class listener implements EventSubscriberInterface
 			$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
 			++$user_count;
 			$this->template->assign_block_vars('lastvisit', array(
-				'USERNAME_FULL'	=> '<span' . $hover_info . '>' . get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']) . '</span>',
+				'USERNAME_FULL'	=> '<span' . $hover_info . '>' . $username_string . '</span>',
 			));
 		}
 
@@ -154,7 +155,7 @@ class listener implements EventSubscriberInterface
 		$template_data = array(
 			'BOTS_ACTIVE'			=> $bot_count,
 			'USERS_ACTIVE'			=> $user_count + $hidden_count,
-			'TOTAL_24HOUR_USERS'	=> $this->user->lang('TOTAL_24HOUR_USERS', $user_count + $total_guests_online_24 + $bot_count + $hidden_count),
+			'TOTAL_24HOUR_USERS'	=> $this->user->lang('TOTAL_24HOUR_USERS', $user_count + $total_guests_online_24 + $bot_count),
 			'USERS_24HOUR_TOTAL'	=> $this->user->lang('USERS_24HOUR_TOTAL', $user_count - $hidden_count),
 			'BOTS_24HOUR_TOTAL'		=> $this->user->lang('BOTS_24HOUR_TOTAL', $bot_count),
 			'HIDDEN_24HOUR_TOTAL'	=> $this->user->lang('HIDDEN_24HOUR_TOTAL', $hidden_count),
