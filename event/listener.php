@@ -41,6 +41,9 @@ class listener implements EventSubscriberInterface
 	/** @var \phpbb\user */
 	protected $user;
 
+	/** @var \rmcgirr83\hidebots\event\listener */
+	private $hidebots;
+
 	public function __construct(
 		\phpbb\auth\auth $auth,
 		\phpbb\cache\service $cache,
@@ -112,6 +115,8 @@ class listener implements EventSubscriberInterface
 
 			// the users stuff...this is changed below depending
 			$username_string = $this->auth->acl_get('u_viewprofile') ? get_username_string('full', $row['user_id'], $row['username'], $row['user_colour']) : get_username_string('no_profile', $row['user_id'], $row['username'], $row['user_colour']);
+			$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
+			$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
 
 			if (($should_hide && $row['user_type'] == USER_IGNORE) || ($row['user_lastvisit'] < $interval && $row['session_time'] < $interval))
 			{
@@ -142,8 +147,6 @@ class listener implements EventSubscriberInterface
 				continue;
 			}
 
-			$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
-			$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
 			++$user_count;
 			$this->template->assign_block_vars('lastvisit', array(
 				'USERNAME_FULL'	=> '<span' . $hover_info . '>' . $username_string . '</span>',
@@ -188,7 +191,6 @@ class listener implements EventSubscriberInterface
 	 */
 	private function obtain_active_user_data()
 	{
-		$active_users = array();
 		$interval = $this->define_interval();
 		if (($active_users = $this->cache->get('_24hour_users')) === false)
 		{
@@ -239,7 +241,6 @@ class listener implements EventSubscriberInterface
 	 */
 	private function obtain_activity_data()
 	{
-		$activity = array();
 		$interval = $this->define_interval();
 		if (($activity = $this->cache->get('_24hour_activity')) === false)
 		{
