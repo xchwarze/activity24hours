@@ -74,8 +74,28 @@ class listener implements EventSubscriberInterface
 	static public function getSubscribedEvents()
 	{
 		return array(
-			'core.index_modify_page_title'			=> 'display_24_hour_stats',
+			'core.permissions'						=>	'activity24hours_stats_permissions',		
+			'core.index_modify_page_title'			=>	'display_24_hour_stats',
 		);
+	}
+
+	/**
+	 * Permission's language file is automatically loaded
+	 *
+	 * @event core.permissions
+	 */
+	public function activity24hours_stats_permissions($event)
+	{
+		$permissions = $event['permissions'];
+
+		$permissions += array(
+			'u_a24hrs_view' => array(
+				'lang'	=> 'ACL_U_A24HRS_VIEW',
+				'cat'	=> 'misc',
+			),
+		);
+
+		$event['permissions'] = $permissions;
 	}
 
 	/**
@@ -87,8 +107,8 @@ class listener implements EventSubscriberInterface
 	*/
 	public function display_24_hour_stats($event)
 	{
-		// if the user is a bot
-		if ($this->user->data['is_bot'])
+		// if the user is not allowed to view
+		if (!$this->auth->acl_get('u_a24hrs_view'))
 		{
 			return;
 		}
@@ -112,7 +132,6 @@ class listener implements EventSubscriberInterface
 		// parse the activity
 		foreach ((array) $active_users as $row)
 		{
-
 			// the users stuff...this is changed below depending
 			$username_string = $this->auth->acl_get('u_viewprofile') ? get_username_string('full', $row['user_id'], $row['username'], $row['user_colour']) : get_username_string('no_profile', $row['user_id'], $row['username'], $row['user_colour']);
 			$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
@@ -165,7 +184,7 @@ class listener implements EventSubscriberInterface
 			'HOUR_TOPICS'			=> $this->user->lang('24HOUR_TOPICS', $activity['topics']),
 			'HOUR_POSTS'			=> $this->user->lang('24HOUR_POSTS', $activity['posts']),
 			'HOUR_USERS'			=> $this->user->lang('24HOUR_USERS', $activity['users']),
-			'S_CAN_VIEW_24_HOURS'	=> true,
+			'S_CAN_VIEW_24_HOURS'	=> $this->auth->acl_get('u_a24hrs_view') ? true : false,
 		);
 		/**
 		* Modify activity display
