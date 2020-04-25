@@ -74,7 +74,7 @@ class listener implements EventSubscriberInterface
 	static public function getSubscribedEvents()
 	{
 		return array(
-			'core.permissions'						=>	'activity24hours_stats_permissions',		
+			'core.permissions'						=>	'activity24hours_stats_permissions',
 			'core.index_modify_page_title'			=>	'display_24_hour_stats',
 		);
 	}
