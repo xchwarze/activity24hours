@@ -1,9 +1,9 @@
 <?php
 /**
  *
- * Hide 24 hour Activity Stats. An extension for the phpBB Forum Software package.
+ * @package - Activity 24 hours. An extension for the phpBB Forum Software package.
  *
- * @copyright (c) 2017, 3Di, https://github.com/3D-I/
+ * @copyright (c) 2020 Rich McGirr (RMcGirr83)
  * @license GNU General Public License, version 2 (GPL-2.0)
  *
  */
