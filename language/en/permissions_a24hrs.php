@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * @package - Activity 24 hours. An extension for the phpBB Forum Software package.
+ * @package - Activity 24 hours
  *
  * @copyright (c) 2020 Rich McGirr (RMcGirr83)
  * @license GNU General Public License, version 2 (GPL-2.0)

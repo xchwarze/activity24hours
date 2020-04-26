@@ -2,6 +2,7 @@
 
 /**
 *
+*
 * @package - Activity 24 hours
 * @copyright (c) 2015 RMcGirr83
 * @license http://opensource.org/licenses/gpl-license.php GNU Public License
@@ -54,4 +55,6 @@ $lang = array_merge($lang, array(
 		1 => 'In total there was %d user :: ',
 		2 => 'In total there were %d users :: ',
 	),
+	'SHOW_LIST'	=> 'Show List',
+	'HIDE_LIST'	=> 'Hide List',
 ));

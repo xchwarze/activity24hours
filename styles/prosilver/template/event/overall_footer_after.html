@@ -1,0 +1,26 @@
+<!-- IF SCRIPT_NAME == 'index' and not S_IS_BOT -->
+<script>
+// <![CDATA[
+var hide = '{LA_HIDE_LIST}';
+var show = '{LA_SHOW_LIST}';
+$(function(){
+	$('#ShowList').show();
+	$('#day_list').hide();
+});	
+function showList()
+{
+	$('#day_list').fadeIn('slow', function() {
+		$('#ShowList').replaceWith(' <a href="#" id="HideList" onclick="hideList(); return false;">'+hide+'</a>');
+	});
+};
+	
+function hideList()
+{
+	$('#day_list').fadeOut('slow', function() {
+		$('#HideList').replaceWith(' <a href="#" id="ShowList" onclick="showList(); return false;">'+show+'</a>');
+	});
+	
+}
+// ]]>
+</script>
+<!-- ENDIF -->
