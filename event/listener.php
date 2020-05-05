@@ -250,6 +250,17 @@ class listener implements EventSubscriberInterface
 			// cache this data for 5 minutes, this improves performance
 			$this->cache->put('_24hour_users', $active_users, 300);
 		}
+		
+		/**
+		* Modify active_users
+		*
+		* @event rmcgirr83.activity24hours.modify_active_users
+		* @var array	active_users	An array of active user data
+		* @since 1.1.1
+		*/
+		$vars = array('active_users');
+		extract($this->dispatcher->trigger_event('rmcgirr83.activity24hours.modify_active_users', compact($vars)));		
+		
 		return $active_users;
 	}
 
