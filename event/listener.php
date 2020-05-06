@@ -172,8 +172,16 @@ class listener implements EventSubscriberInterface
 			));
 		}
 
+		$display_link = false;
+
+		if ($user_count || $hidden_count || $bot_count)
+		{
+			$display_link = true;
+		}
+
 		// assign the forum stats to the template.
 		$template_data = array(
+			'DISPLAY_LINK'			=> $display_link,
 			'BOTS_ACTIVE'			=> $bot_count,
 			'USERS_ACTIVE'			=> $user_count + $hidden_count,
 			'TOTAL_24HOUR_USERS'	=> $this->user->lang('TOTAL_24HOUR_USERS', $user_count + $total_guests_online_24 + $bot_count),
