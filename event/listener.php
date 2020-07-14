@@ -44,7 +44,7 @@ class listener implements EventSubscriberInterface
 	protected $dispatcher;
 
 	/** @var \phpbb\language\language */
-	protected $language;	
+	protected $language;
 
 	/** @var \phpbb\template\template */
 	protected $template;
