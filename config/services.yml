@@ -7,6 +7,7 @@ services:
             - '@config'
             - '@dbal.conn'
             - '@dispatcher'
+            - '@language'
             - '@template'
             - '@user'
             - '@?rmcgirr83.hidebots.listener'

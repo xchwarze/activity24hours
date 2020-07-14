@@ -1,5 +1,4 @@
 <?php
-
 /**
 *
 *
@@ -33,17 +32,17 @@ if (empty($lang) || !is_array($lang))
 // Some characters you may want to copy&paste:
 // ’ » “ ” …
 
-$lang = array_merge($lang, array(
-	'BOTS_24HOUR_TOTAL'	=> array(
+$lang = array_merge($lang, [
+	'BOTS_24HOUR_TOTAL'	=> [
 		1 => '%d bot',
 		2 => '%d bots',
-	),
+	],
 	'USERS_24HOUR_TOTAL'	=>  '%d registered,',
 	'HIDDEN_24HOUR_TOTAL'	=> ' %d hidden, ',
-	'GUEST_ONLINE_24'		=> array(
+	'GUEST_ONLINE_24'		=> [
 		1 => ' and %d guest',
 		2 => ' and %d guests',
-	),
+	],
 	'LAST_24_HOURS'	=> ' active over the last 24 hours',
 	'24HOUR_TOPICS'			=> 'New topics %d',
 	'24HOUR_POSTS'			=> 'New posts %d',
@@ -51,10 +50,11 @@ $lang = array_merge($lang, array(
 	'NO_ONLINE_BOTS'		=> 'No Bots active',
 
 	'TWENTYFOURHOUR_STATS'	=> 'Activity over the last 24 hours',
-	'TOTAL_24HOUR_USERS'	=> array(
+	'TOTAL_24HOUR_USERS'	=> [
 		1 => 'In total there was %d user :: ',
 		2 => 'In total there were %d users :: ',
-	),
+	],
 	'SHOW_LIST'	=> 'Show List',
 	'HIDE_LIST'	=> 'Hide List',
-));
+	'EXTENSION_REQUIREMENTS'	=> 'This extension requires phpBB version %1$s.<br>Please check which versions you have and update accordingly to use this extension.',
+]);

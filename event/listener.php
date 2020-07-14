@@ -13,6 +13,14 @@ namespace rmcgirr83\activity24hours\event;
 /**
 * @ignore
 */
+use phpbb\auth\auth
+use phpbb\cahe\service
+use phpbb\config\config
+use phpbb\db\driver\driver_interface
+use phpbb\language\language
+use phpbb\event\dispatcher_interface
+use phpbb\template\template
+use phpbb\user
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -35,6 +43,9 @@ class listener implements EventSubscriberInterface
 	/** @var \phpbb\event\dispatcher_interface */
 	protected $dispatcher;
 
+	/** @var \phpbb\language\language */
+	protected $language;	
+
 	/** @var \phpbb\template\template */
 	protected $template;
 
@@ -45,13 +56,14 @@ class listener implements EventSubscriberInterface
 	private $hidebots;
 
 	public function __construct(
-		\phpbb\auth\auth $auth,
-		\phpbb\cache\service $cache,
-		\phpbb\config\config $config,
-		\phpbb\db\driver\driver_interface $db,
-		\phpbb\event\dispatcher_interface $dispatcher,
-		\phpbb\template\template $template,
-		\phpbb\user $user,
+		auth $auth,
+		service $cache,
+		config $config,
+		driver_interface $db,
+		dispatcher_interface $dispatcher,
+		language $language,
+		template $template,
+		user $user,
 		\rmcgirr83\hidebots\event\listener $hidebots = null)
 	{
 		$this->auth = $auth;
@@ -113,7 +125,7 @@ class listener implements EventSubscriberInterface
 			return;
 		}
 
-		$this->user->add_lang_ext('rmcgirr83/activity24hours', 'common');
+		$this->language->add_lang('common', 'rmcgirr83/activity24hours');
 
 		// obtain posts/topics/new users activity
 		$activity = $this->obtain_activity_data();
@@ -127,7 +139,7 @@ class listener implements EventSubscriberInterface
 		$user_count = $bot_count = $hidden_count = 0;
 		$interval = $this->define_interval();
 		// we hide bots according to the hide bots extension
-		$should_hide = (!$this->auth->acl_get('a_') && $this->hidebots !== null) ? true : false;
+		$hide_bots = (!$this->auth->acl_get('a_') && $this->hidebots !== null) ? true : false;
 
 		// parse the activity
 		foreach ((array) $active_users as $row)
@@ -137,7 +149,7 @@ class listener implements EventSubscriberInterface
 			$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
 			$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
 
-			if (($should_hide && $row['user_type'] == USER_IGNORE) || ($row['user_lastvisit'] < $interval && $row['session_time'] < $interval))
+			if (($hide_bots && $row['user_type'] == USER_IGNORE) || ($row['user_lastvisit'] < $interval && $row['session_time'] < $interval))
 			{
 				continue;
 			}
@@ -184,14 +196,14 @@ class listener implements EventSubscriberInterface
 			'DISPLAY_LINK'			=> $display_link,
 			'BOTS_ACTIVE'			=> $bot_count,
 			'USERS_ACTIVE'			=> $user_count + $hidden_count,
-			'TOTAL_24HOUR_USERS'	=> $this->user->lang('TOTAL_24HOUR_USERS', $user_count + $total_guests_online_24 + $bot_count),
-			'USERS_24HOUR_TOTAL'	=> $this->user->lang('USERS_24HOUR_TOTAL', $user_count - $hidden_count),
-			'BOTS_24HOUR_TOTAL'		=> $this->user->lang('BOTS_24HOUR_TOTAL', $bot_count),
-			'HIDDEN_24HOUR_TOTAL'	=> $this->user->lang('HIDDEN_24HOUR_TOTAL', $hidden_count),
-			'GUEST_ONLINE_24'		=> $total_guests_online_24 ? $this->user->lang('GUEST_ONLINE_24', $total_guests_online_24) : '',
-			'HOUR_TOPICS'			=> $this->user->lang('24HOUR_TOPICS', $activity['topics']),
-			'HOUR_POSTS'			=> $this->user->lang('24HOUR_POSTS', $activity['posts']),
-			'HOUR_USERS'			=> $this->user->lang('24HOUR_USERS', $activity['users']),
+			'TOTAL_24HOUR_USERS'	=> $this->language->lang('TOTAL_24HOUR_USERS', $user_count + $total_guests_online_24 + $bot_count),
+			'USERS_24HOUR_TOTAL'	=> $this->language->lang('USERS_24HOUR_TOTAL', $user_count - $hidden_count),
+			'BOTS_24HOUR_TOTAL'		=> $this->language->lang('BOTS_24HOUR_TOTAL', $bot_count),
+			'HIDDEN_24HOUR_TOTAL'	=> $this->language->lang('HIDDEN_24HOUR_TOTAL', $hidden_count),
+			'GUEST_ONLINE_24'		=> $total_guests_online_24 ? $this->language->lang('GUEST_ONLINE_24', $total_guests_online_24) : '',
+			'HOUR_TOPICS'			=> $this->language->lang('24HOUR_TOPICS', $activity['topics']),
+			'HOUR_POSTS'			=> $this->language->lang('24HOUR_POSTS', $activity['posts']),
+			'HOUR_USERS'			=> $this->language->lang('24HOUR_USERS', $activity['users']),
 			'S_CAN_VIEW_24_HOURS'	=> $this->auth->acl_get('u_a24hrs_view') ? true : false,
 		);
 		/**
