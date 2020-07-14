@@ -17,8 +17,8 @@ use phpbb\auth\auth
 use phpbb\cahe\service
 use phpbb\config\config
 use phpbb\db\driver\driver_interface
-use phpbb\language\language
 use phpbb\event\dispatcher_interface
+use phpbb\language\language
 use phpbb\template\template
 use phpbb\user
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
