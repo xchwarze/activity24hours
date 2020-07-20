@@ -14,10 +14,10 @@ namespace rmcgirr83\activity24hours\event;
 * @ignore
 */
 use phpbb\auth\auth;
-use phpbb\cahe\service;
+use phpbb\cache\service as cache_service;
 use phpbb\config\config;
 use phpbb\db\driver\driver_interface;
-use phpbb\event\dispatcher_interface;
+use phpbb\event\dispatcher_interface as dispatcher;
 use phpbb\language\language;
 use phpbb\template\template;
 use phpbb\user;
@@ -37,7 +37,7 @@ class listener implements EventSubscriberInterface
 	/** @var \phpbb\config\config */
 	protected $config;
 
-	/** @var \phpbb\db\driver\driver */
+	/** @var \phpbb\db\driver\driver_interface */
 	protected $db;
 
 	/** @var \phpbb\event\dispatcher_interface */
@@ -57,23 +57,26 @@ class listener implements EventSubscriberInterface
 
 	public function __construct(
 		auth $auth,
-		service $cache,
+		cache_service $cache,
 		config $config,
 		driver_interface $db,
-		dispatcher_interface $dispatcher,
+		dispatcher $dispatcher,
 		language $language,
 		template $template,
 		user $user,
-		\rmcgirr83\hidebots\event\listener $hidebots = null)
+		\rmcgirr83\hidebots\event\listener $hidebots = null,
+		\senky\relativedates\event\listener $relativedates = null)
 	{
 		$this->auth = $auth;
 		$this->cache = $cache;
 		$this->config = $config;
 		$this->db = $db;
 		$this->dispatcher = $dispatcher;
+		$this->language = $language;
 		$this->template = $template;
 		$this->user = $user;
 		$this->hidebots = $hidebots;
+		$this->relativedates = $relativedates;
 	}
 
 	/**
@@ -85,10 +88,10 @@ class listener implements EventSubscriberInterface
 	*/
 	static public function getSubscribedEvents()
 	{
-		return array(
+		return [
 			'core.permissions'						=>	'activity24hours_stats_permissions',
 			'core.index_modify_page_title'			=>	'display_24_hour_stats',
-		);
+		];
 	}
 
 	/**
@@ -99,14 +102,7 @@ class listener implements EventSubscriberInterface
 	public function activity24hours_stats_permissions($event)
 	{
 		$permissions = $event['permissions'];
-
-		$permissions += array(
-			'u_a24hrs_view' => array(
-				'lang'	=> 'ACL_U_A24HRS_VIEW',
-				'cat'	=> 'misc',
-			),
-		);
-
+		$permissions['u_a24hrs_view'] = ['lang'	=> 'ACL_U_A24HRS_VIEW',	'cat'	=> 'misc'];
 		$event['permissions'] = $permissions;
 	}
 
@@ -147,7 +143,18 @@ class listener implements EventSubscriberInterface
 			// the users stuff...this is changed below depending
 			$username_string = $this->auth->acl_get('u_viewprofile') ? get_username_string('full', $row['user_id'], $row['username'], $row['user_colour']) : get_username_string('no_profile', $row['user_id'], $row['username'], $row['user_colour']);
 			$max_last_visit = max($row['user_lastvisit'], $row['session_time']);
-			$hover_info = ' title="' . $this->user->format_date($max_last_visit) . '"';
+
+			// relativedates installed?
+			if ($this->relativedates !== null)
+			{
+				$hover_info = $this->user->format_date($max_last_visit, false, false, false);
+			}
+			else
+			{
+				$hover_info = $this->user->format_date($max_last_visit);
+			}
+
+			$hover_info = ' title="' . $hover_info . '"';
 
 			if (($hide_bots && $row['user_type'] == USER_IGNORE) || ($row['user_lastvisit'] < $interval && $row['session_time'] < $interval))
 			{
@@ -157,7 +164,7 @@ class listener implements EventSubscriberInterface
 			if (((!$row['session_viewonline'] && !empty($row['session_time'])) || !$row['user_allow_viewonline']) && $row['user_type'] != USER_IGNORE )
 			{
 				++$hidden_count;
-				if ($this->auth->acl_get('u_viewonline') || $row['user_id'] === $this->user->data['user_id'])
+				if ($this->auth->acl_get('u_viewonline') || $row['user_id'] == $this->user->data['user_id'])
 				{
 					$row['username'] = '<em>' . $row['username'] . '</em>';
 					$username_string = get_username_string('full', $row['user_id'], $row['username'], $row['user_colour']);
@@ -172,16 +179,16 @@ class listener implements EventSubscriberInterface
 			else if ($row['user_type'] == USER_IGNORE)
 			{
 				++$bot_count;
-				$this->template->assign_block_vars('bot_lastvisit', array(
+				$this->template->assign_block_vars('bot_lastvisit', [
 					'BOTNAME_FULL'	=> '<span' . $hover_info . '>' . get_username_string('no_profile', $row['user_id'], $row['username'], $row['user_colour']) . '</span>',
-				));
+				]);
 				continue;
 			}
 
 			++$user_count;
-			$this->template->assign_block_vars('lastvisit', array(
+			$this->template->assign_block_vars('lastvisit', [
 				'USERNAME_FULL'	=> '<span' . $hover_info . '>' . $username_string . '</span>',
-			));
+			]);
 		}
 
 		$display_link = false;
@@ -192,7 +199,7 @@ class listener implements EventSubscriberInterface
 		}
 
 		// assign the forum stats to the template.
-		$template_data = array(
+		$template_data = [
 			'DISPLAY_LINK'			=> $display_link,
 			'BOTS_ACTIVE'			=> $bot_count,
 			'USERS_ACTIVE'			=> $user_count + $hidden_count,
@@ -205,7 +212,7 @@ class listener implements EventSubscriberInterface
 			'HOUR_POSTS'			=> $this->language->lang('24HOUR_POSTS', $activity['posts']),
 			'HOUR_USERS'			=> $this->language->lang('24HOUR_USERS', $activity['users']),
 			'S_CAN_VIEW_24_HOURS'	=> $this->auth->acl_get('u_a24hrs_view') ? true : false,
-		);
+		];
 		/**
 		* Modify activity display
 		*
@@ -216,7 +223,7 @@ class listener implements EventSubscriberInterface
 		* @var array	template_data			An array of the template items
 		* @since 1.0.6
 		*/
-		$vars = array('activity', 'active_users', 'total_guests_online_24', 'template_data');
+		$vars = ['activity', 'active_users', 'total_guests_online_24', 'template_data'];
 		extract($this->dispatcher->trigger_event('rmcgirr83.activity24hours.modify_activity_display', compact($vars)));
 
 		// Assign template date to template engine
@@ -235,19 +242,19 @@ class listener implements EventSubscriberInterface
 		{
 			// grab a list of users who are currently online
 			// and users who have visited in the last 24 hours
-			$sql_ary = array(
+			$sql_ary = [
 				'SELECT'	=> 'u.user_id, u.user_colour, u.username, u.user_type, u.user_lastvisit, u.user_allow_viewonline, MAX(s.session_time) as session_time, s.session_viewonline',
-				'FROM'		=> array(USERS_TABLE => 'u'),
-				'LEFT_JOIN'	=> array(
-					array(
-						'FROM'	=> array(SESSIONS_TABLE => 's'),
+				'FROM'		=> [USERS_TABLE => 'u'],
+				'LEFT_JOIN'	=> [
+					[
+						'FROM'	=> [SESSIONS_TABLE => 's'],
 						'ON'	=> 's.session_user_id = u.user_id',
-					),
-				),
+					],
+				],
 				'WHERE'		=> 'u.user_lastvisit > ' . (int) $interval . ' OR s.session_user_id <> ' . ANONYMOUS,
 				'GROUP_BY'	=> 'u.user_id, s.session_viewonline',
 				'ORDER_BY'	=> 'u.username_clean',
-			);
+			];
 
 			/**
 			* Modify sql_ary
@@ -256,7 +263,7 @@ class listener implements EventSubscriberInterface
 			* @var array	sql_ary			An array of the sql query
 			* @since 1.0.4
 			*/
-			$vars = array('sql_ary');
+			$vars = ['sql_ary'];
 			extract($this->dispatcher->trigger_event('rmcgirr83.activity24hours.modify_sql_ary', compact($vars)));
 
 			$result = $this->db->sql_query($this->db->sql_build_query('SELECT', $sql_ary));
@@ -278,7 +285,7 @@ class listener implements EventSubscriberInterface
 		* @var array	active_users	An array of active user data
 		* @since 1.1.1
 		*/
-		$vars = array('active_users');
+		$vars = ['active_users'];
 		extract($this->dispatcher->trigger_event('rmcgirr83.activity24hours.modify_active_users', compact($vars)));
 
 		return $active_users;
@@ -382,7 +389,7 @@ class listener implements EventSubscriberInterface
 		* @return		the amount of time in seconds
 		* @since 1.0.7
 		*/
-		$vars = array('look_back');
+		$vars = ['look_back'];
 		extract($this->dispatcher->trigger_event('rmcgirr83.activity24hours.modify_activity_look_back', compact($vars)));
 
 		return (time() - $look_back);

@@ -11,5 +11,6 @@ services:
             - '@template'
             - '@user'
             - '@?rmcgirr83.hidebots.listener'
+            - '@?senky.relativedates.listener'
         tags:
             - { name: event.listener }

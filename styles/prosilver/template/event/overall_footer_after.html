@@ -1,23 +1,25 @@
-<!-- IF SCRIPT_NAME == 'index' and not S_IS_BOT -->
+{% if SCRIPT_NAME == 'index' and not S_IS_BOT %}
 <script>
-// <![CDATA[
-var hide = '{LA_HIDE_LIST}';
-var show = '{LA_SHOW_LIST}';
+$(document).ready(function() {
+  $("#ListTrigger").show();
+});
+var hide = '<i class="fa fa-minus"></i>';
+var show = '<i class="fa fa-plus"></i>';
 
 function showList()
 {
-	$('#day_list').fadeIn('slow', function() {
-		$('#ShowList').replaceWith(' <a href="#" id="HideList" onclick="hideList(); return false;">'+hide+'</a>');
+	$('#day_list').fadeIn('fast', function() {
+		$('#ShowList').replaceWith(' <a href="#" title="{{ lang('HIDE_LIST') }}" id="HideList" onclick="hideList(); return false;">'+hide+'</a>');
 	});
 };
 	
 function hideList()
 {
-	$('#day_list').fadeOut('slow', function() {
-		$('#HideList').replaceWith(' <a href="#" id="ShowList" onclick="showList(); return false;">'+show+'</a>');
+	$('#day_list').fadeOut('fast', function() {
+		$('#HideList').replaceWith(' <a href="#" title="{{ lang('SHOW_LIST') }}" id="ShowList" onclick="showList(); return false;">'+show+'</a>');
 	});
 	
 }
-// ]]>
+
 </script>
-<!-- ENDIF -->
+{% endif %}
