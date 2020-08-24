@@ -294,7 +294,7 @@ class listener implements EventSubscriberInterface
 			$this->db->sql_freeresult($result);
 
 			// cache this data for 5 minutes, this improves performance
-			$this->cache->put('_24hour_users', $active_users, 300);
+			$this->cache->put('_24hour_users', $active_users, 3600);
 		}
 
 		/**
@@ -346,7 +346,7 @@ class listener implements EventSubscriberInterface
 			$this->db->sql_freeresult($result);
 
 			// cache this data for 5 minutes, this improves performance
-			$this->cache->put('_24hour_activity', $activity, 300);
+			$this->cache->put('_24hour_activity', $activity, 3600);
 		}
 		return $activity;
 	}
@@ -383,7 +383,7 @@ class listener implements EventSubscriberInterface
 				$this->db->sql_freeresult($result);
 
 				// cache this data for 5 minutes, this improves performance
-				$this->cache->put('_total_guests_online_24', $total_guests_online_24, 300);
+				$this->cache->put('_total_guests_online_24', $total_guests_online_24, 3600);
 			}
 		}
 		return $total_guests_online_24;
